@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: O Enigma Histórico</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #f4f4f4;
+            --accent-color: #d32f2f;
+            --panel-bg: #2a2a2a;
+            --input-bg: #333;
+        }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .screen { display: none; animation: fadeIn 0.5s; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        h1, h2, h3 { color: var(--accent-color); text-align: center; }
+        .center-text { text-align: center; }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin: 5px;
+            font-family: inherit;
+        }
+        button:hover { background-color: #b71c1c; }
+        button:disabled { background-color: #555; color: #888; cursor: not-allowed; }
+        .btn-back { background-color: #555; margin-bottom: 20px; }
+        .btn-back:hover { background-color: #777; }
+        .btn-action { background-color: #1976d2; }
+        .btn-action:hover { background-color: #115293; }
+        .btn-success { background-color: #388e3c; }
+        .btn-success:hover { background-color: #2e7d32; }
+        .btn-danger { background-color: #d32f2f; }
+        .btn-warning { background-color: #ffca28; color: #333; font-weight: bold; }
+        .btn-warning:hover { background-color: #ffb300; }
+
+        input[type="text"], input[type="number"], textarea, select {
+            padding: 10px;
+            font-size: 1em;
+            width: 100%;
+            margin-bottom: 10px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background-color: var(--input-bg);
+            color: white;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .game-container {
+            background-color: var(--panel-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            margin-top: 20px;
+            border: 1px solid #444;
+            text-align: center;
+            position: relative;
+        }
+        
+        #timer-display {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffeb3b;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .room-desc { font-size: 1.2em; margin-bottom: 20px; line-height: 1.5; text-align: justify; }
+        .question-text { font-weight: bold; margin-bottom: 20px; color: #ffeb3b; }
+        
+        #feedback { margin-top: 15px; font-weight: bold; min-height: 24px; line-height: 1.4; }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; } 
+        .highlight-word { color: #ffffff; text-transform: uppercase; border-bottom: 1px dashed #ffffff;}
+
+        #hint-display {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #333;
+            border-left: 4px solid #ffca28;
+            color: #ffca28;
+            font-size: 1.1em;
+            display: none;
+            text-align: left;
+            border-radius: 0 4px 4px 0;
+            line-height: 1.4;
+        }
+
+        .editor-panel { background-color: var(--panel-bg); padding: 20px; border-radius: 10px; }
+        
+        .editor-header { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .editor-header select { flex: 1; margin-bottom: 0; }
+        .editor-header button { margin: 0; }
+
+        .question-card {
+            background-color: #222;
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .question-card h4 { margin-top: 0; color: #aaa; border-bottom: 1px solid #444; padding-bottom: 5px;}
+        .card-delete-btn { position: absolute; top: 10px; right: 10px; padding: 5px 10px; font-size: 0.8em; }
+
+        .theme-list { display: flex; flex-direction: column; gap: 10px; }
+        .theme-btn { padding: 15px; font-size: 1.2em; background-color: #333; border: 1px solid #555; text-align: left; }
+        .theme-btn:hover { background-color: #444; border-color: var(--accent-color); }
+
+        .rules-box { background-color: #222; padding: 20px; border-radius: 8px; border-left: 4px solid var(--accent-color); margin-bottom: 20px; line-height: 1.6;}
+        
+        .editor-grid-3 { display: grid; grid-template-columns: 1fr 140px 140px; gap: 10px; }
+        
+        @media (max-width: 600px) {
+            .editor-grid-3 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="screen-home" class="screen active center-text">
+        <h1>ESCAPE ROOM</h1>
+        <p>Bem-vindo ao enigma histórico. Você está pronto para escapar?</p>
+        
+        <br><br>
+        <button onclick="nav('screen-intro')" style="font-size: 1.5em; padding: 15px 40px;">Jogar</button>
+        <br><br><br>
+
+        <div class="editor-panel" style="max-width: 400px; margin: 0 auto;">
+            <h3>Painel de Controle</h3>
+            <button class="btn-action" onclick="nav('screen-editor'); loadEditorThemes();">Editor e Criador do Jogo</button>
+            <br>
+            
+            <div style="margin-top: 15px; border-top: 1px solid #444; padding-top: 15px; text-align: left;">
+                <label for="export-theme-select" style="font-size: 0.9em; margin-bottom: 5px; display: block;">Filtrar exportação:</label>
+                <select id="export-theme-select" style="margin-bottom: 10px;">
+                    <option value="all">Exportar Todos os Temas</option>
+                    </select>
+                <button onclick="exportData()" style="font-size: 0.9em; width: 100%;">Exportar (.json)</button>
+            </div>
+            
+            <div style="margin-top: 15px; text-align: left;">
+                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+                <button onclick="document.getElementById('import-file').click()" style="font-size: 0.9em; width: 100%; background-color: #555;">Importar (.json)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-intro" class="screen">
+        <button class="btn-back" onclick="nav('screen-home')">◄ Voltar</button>
+        <h1>O Desafio Começa</h1>
+        
+        <div class="rules-box">
+            <h3>A Missão</h3>
+            <p>Você está prestes a entrar em uma série de salas trancadas. A única chave para a liberdade é o seu conhecimento.</p>
+            <h3>Regras Críticas:</h3>
+            <ul>
+                <li>Leia atentamente o contexto de cada ambiente.</li>
+                <li>Responda à pergunta antes que o tempo acabe.</li>
+                <li>Sua equipe possui um <strong>número limitado de Dicas</strong> para usar durante toda a jornada. Use com sabedoria!</li>
+                <li>O sistema ignora maiúsculas e acentos. Pequenos erros de digitação podem ser perdoados.</li>
+                <li><strong style="color: var(--accent-color);">ATENÇÃO:</strong> Se o tempo esgotar em qualquer sala, você voltará para a <strong>Sala 1</strong>!</li>
+            </ul>
+        </div>
+
+        <div class="center-text">
+            <button class="btn-success" onclick="nav('screen-themes'); renderThemes();" style="font-size: 1.2em;">Avançar ►</button>
+        </div>
+    </div>
+
+    <div id="screen-themes" class="screen">
+        <button class="btn-back" onclick="nav('screen-intro')">◄ Voltar</button>
+        <h1>Selecione o Tema</h1>
+        <p class="center-text">Escolha qual desafio você irá enfrentar hoje:</p>
+        
+        <div id="theme-list-container" class="theme-list"></div>
+    </div>
+
+    <div id="screen-game" class="screen">
+        <button class="btn-back" onclick="nav('screen-themes')">◄ Abandonar Sala</button>
+        
+        <div class="game-container">
+            <div id="timer-display">Tempo: --</div>
+            <h2 id="room-title">Carregando...</h2>
+            <p class="room-desc" id="room-desc"></p>
+            <p class="question-text" id="question-text"></p>
+            
+            <input type="text" id="answer-input" placeholder="Sua resposta..." autocomplete="off">
+            
+            <div id="game-controls" style="display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                <button id="btn-hint" class="btn-warning" onclick="showHint()">💡 Dica (<span id="hints-left">3</span>)</button>
+                <button id="btn-answer" class="btn-action" onclick="checkAnswer()">Tentar Destrancar</button>
+                <button id="btn-advance" class="btn-success" onclick="advanceRoom()" disabled>Avançar ►</button>
+            </div>
+            
+            <div id="hint-display"></div>
+            <div id="feedback"></div>
+            
+            <hr style="border-color: #444; margin-top: 30px;">
+            <button onclick="resetCurrentThemeProgress()" style="background-color: #555; font-size: 0.8em;">Reiniciar Este Tema</button>
+        </div>
+    </div>
+
+    <div id="screen-editor" class="screen">
+        <button class="btn-back" onclick="nav('screen-home')">◄ Voltar ao Menu</button>
+        <h1>Editor de Desafios</h1>
+
+        <div class="editor-panel">
+            <div class="editor-header">
+                <select id="editor-theme-select" onchange="renderEditorArea()">
+                    <option value="">-- Selecione um Tema para Editar --</option>
+                </select>
+                <button class="btn-success" onclick="createNewTheme()">+ Novo Tema</button>
+                <button class="btn-danger" id="btn-delete-theme" onclick="deleteCurrentTheme()" style="display: none;">Excluir Tema</button>
+            </div>
+
+            <div id="editor-workspace" style="display: none;">
+                
+                <div style="background-color: #333; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <label><strong>Nome do Tema:</strong></label>
+                    <input type="text" id="edit-theme-name" onchange="updateThemeConfig()">
+                    
+                    <label><strong>Quantidade de Dicas Permitidas (Por Partida inteira):</strong></label>
+                    <input type="number" id="edit-theme-hints" min="0" value="3" onchange="updateThemeConfig()" title="Quantas dicas a equipe tem direito a usar durante todo este tema.">
+                </div>
+
+                <h3>Desafios (Salas)</h3>
+                <div id="editor-questions-list"></div>
+
+                <button class="btn-action" onclick="addQuestionToCurrentTheme()">+ Adicionar Nova Pergunta</button>
+                <br><br>
+                <button class="btn-success" onclick="saveEditorData()" style="width: 100%; font-size: 1.2em;">Salvar Todas as Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Algoritmo de Distância de Levenshtein ---
+        function levenshteinDistance(a, b) {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+
+            const matrix = [];
+
+            for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+            for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1, // Substituição
+                            Math.min(
+                                matrix[i][j - 1] + 1, // Inserção
+                                matrix[i - 1][j] + 1  // Deleção
+                            )
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        const defaultData = [
+            {
+                id: "tema_revolucao_1789",
+                name: "Revolução Francesa",
+                maxHints: 3,
+                questions: [
+                    {
+                        roomName: "A Prisão Escura",
+                        description: "O ano é 1789. Você está preso em uma cela úmida. Lá fora, ouve-se o barulho de uma multidão furiosa avançando contra as muralhas da grande fortaleza.",
+                        question: "Qual é o nome da prisão em que você se encontra?",
+                        hint: "É um nome feminino. Sua 'queda' marca o grande início da revolução.",
+                        answer: "bastilha",
+                        timeLimit: 60,
+                        errorTolerance: 2
+                    },
+                    {
+                        roomName: "O Salão da Assembleia",
+                        description: "Você escapou e entrou em um salão iluminado. Há um documento que declara que 'os homens nascem e são livres e iguais em direitos'.",
+                        question: "Qual é a primeira palavra desse documento (_____ dos Direitos do Homem...)?",
+                        hint: "Sinônimo de 'pronunciamento' ou 'afirmação oficial'.",
+                        answer: "declaração",
+                        timeLimit: 45,
+                        errorTolerance: 2
+                    }
+                ]
+            }
+        ];
+
+        let gameData = JSON.parse(localStorage.getItem('escapeRoomDataV7')) || JSON.parse(localStorage.getItem('escapeRoomDataV6')) || defaultData;
+        let activeThemeId = null;
+        let activeThemeEditorId = null;
+        
+        let timerInterval;
+        let currentTimeLeft;
+
+        function nav(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            clearInterval(timerInterval);
+            if(screenId !== 'screen-game') {
+                document.getElementById('feedback').textContent = '';
+                document.getElementById('hint-display').style.display = 'none';
+                document.getElementById('answer-input').value = '';
+            }
+            
+            // Atualiza as opções de exportação ao voltar para a tela inicial
+            if(screenId === 'screen-home') loadExportOptions(); 
+        }
+
+        function loadExportOptions() {
+            const select = document.getElementById('export-theme-select');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="all">Exportar Todos os Temas</option>';
+            gameData.forEach(theme => {
+                select.innerHTML += `<option value="${theme.id}">${theme.name}</option>`;
+            });
+        }
+
+        function renderThemes() {
+            const container = document.getElementById('theme-list-container');
+            container.innerHTML = '';
+            if(gameData.length === 0) {
+                container.innerHTML = '<p>Nenhum tema disponível. Crie um no painel de controle!</p>';
+                return;
+            }
+            gameData.forEach(theme => {
+                const btn = document.createElement('button');
+                btn.className = 'theme-btn';
+                const progress = parseInt(localStorage.getItem(`progress_${theme.id}`)) || 0;
+                let status = `(Sala ${progress + 1} de ${theme.questions.length})`;
+                if (progress >= theme.questions.length && theme.questions.length > 0) status = "(Concluído!)";
+                if (theme.questions.length === 0) status = "(Vazio)";
+
+                btn.innerHTML = `<strong>${theme.name}</strong> <span style="font-size:0.8em; color:#aaa; float:right;">${status}</span>`;
+                btn.onclick = () => startGame(theme.id);
+                container.appendChild(btn);
+            });
+        }
+
+        function startGame(themeId) {
+            const theme = gameData.find(t => t.id === themeId);
+            if (!theme || theme.questions.length === 0) {
+                alert("Este tema não possui perguntas configuradas.");
+                return;
+            }
+            activeThemeId = themeId;
+            nav('screen-game');
+            renderRoom();
+        }
+
+        function renderRoom() {
+            const theme = gameData.find(t => t.id === activeThemeId);
+            let currentRoomIndex = parseInt(localStorage.getItem(`progress_${activeThemeId}`)) || 0;
+            let currentHintsUsed = parseInt(localStorage.getItem(`hints_used_${activeThemeId}`)) || 0;
+            let maxHints = theme.maxHints !== undefined ? parseInt(theme.maxHints) : 3;
+            let hintsLeft = Math.max(0, maxHints - currentHintsUsed);
+            
+            const titleEl = document.getElementById('room-title');
+            const descEl = document.getElementById('room-desc');
+            const questionEl = document.getElementById('question-text');
+            const inputEl = document.getElementById('answer-input');
+            const feedbackEl = document.getElementById('feedback');
+            const timerDisplay = document.getElementById('timer-display');
+            const gameControls = document.getElementById('game-controls');
+
+            feedbackEl.innerHTML = '';
+            feedbackEl.className = '';
+            inputEl.value = '';
+            inputEl.disabled = false;
+            
+            document.getElementById('hint-display').style.display = 'none';
+            document.getElementById('hint-display').textContent = '';
+
+            if (currentRoomIndex < theme.questions.length) {
+                const currentRoom = theme.questions[currentRoomIndex];
+                titleEl.textContent = `Sala ${currentRoomIndex + 1}: ${currentRoom.roomName}`;
+                descEl.textContent = currentRoom.description;
+                questionEl.textContent = currentRoom.question;
+                
+                inputEl.style.display = 'inline-block';
+                gameControls.style.display = 'flex';
+                timerDisplay.style.display = 'block';
+                inputEl.focus();
+                
+                document.getElementById('hints-left').textContent = hintsLeft;
+                document.getElementById('btn-hint').disabled = (hintsLeft <= 0 || !currentRoom.hint || currentRoom.hint.trim() === "");
+                document.getElementById('btn-answer').disabled = false;
+                document.getElementById('btn-advance').disabled = true; 
+                
+                startTimer(currentRoom.timeLimit || 60);
+            } else {
+                titleEl.textContent = "Vitória!";
+                descEl.textContent = "Você desvendou todos os enigmas e escapou com sucesso!";
+                questionEl.textContent = "";
+                inputEl.style.display = 'none';
+                gameControls.style.display = 'none';
+                timerDisplay.style.display = 'none';
+                clearInterval(timerInterval);
+            }
+        }
+
+        function startTimer(duration) {
+            clearInterval(timerInterval);
+            currentTimeLeft = duration;
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                currentTimeLeft--;
+                updateTimerDisplay();
+                if(currentTimeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer-display');
+            const minutes = Math.floor(currentTimeLeft / 60);
+            const seconds = currentTimeLeft % 60;
+            display.textContent = `0${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            display.style.color = currentTimeLeft <= 10 ? '#f44336' : '#ffeb3b';
+        }
+
+        function handleTimeOut() {
+            const feedbackEl = document.getElementById('feedback');
+            const inputEl = document.getElementById('answer-input');
+            
+            localStorage.setItem(`progress_${activeThemeId}`, 0);
+            localStorage.setItem(`hints_used_${activeThemeId}`, 0);
+
+            feedbackEl.innerHTML = "O tempo acabou! O sistema trancou as portas e o labirinto mudou. Sua equipe foi enviada de volta ao início.";
+            feedbackEl.className = 'error';
+            
+            inputEl.disabled = true;
+            document.getElementById('btn-answer').disabled = true;
+            document.getElementById('btn-advance').disabled = true;
+            document.getElementById('btn-hint').disabled = true;
+            
+            feedbackEl.innerHTML += `<br><button class="btn-danger" onclick="renderRoom()" style="margin-top: 15px; font-size: 1em;">Voltar para a Sala 1</button>`;
+        }
+
+        function showHint() {
+            const theme = gameData.find(t => t.id === activeThemeId);
+            let currentRoomIndex = parseInt(localStorage.getItem(`progress_${activeThemeId}`)) || 0;
+            let currentHintsUsed = parseInt(localStorage.getItem(`hints_used_${activeThemeId}`)) || 0;
+            let maxHints = theme.maxHints !== undefined ? parseInt(theme.maxHints) : 3;
+            
+            if (currentHintsUsed < maxHints) {
+                currentHintsUsed++;
+                localStorage.setItem(`hints_used_${activeThemeId}`, currentHintsUsed);
+                
+                let hintsLeft = maxHints - currentHintsUsed;
+                document.getElementById('hints-left').textContent = hintsLeft;
+                
+                if (hintsLeft <= 0) {
+                    document.getElementById('btn-hint').disabled = true;
+                }
+                
+                const hintText = theme.questions[currentRoomIndex].hint;
+                document.getElementById('hint-display').innerHTML = "💡 <strong>Dica:</strong> " + hintText;
+                document.getElementById('hint-display').style.display = 'block';
+            }
+        }
+
+        function checkAnswer() {
+            const theme = gameData.find(t => t.id === activeThemeId);
+            let currentRoomIndex = parseInt(localStorage.getItem(`progress_${activeThemeId}`)) || 0;
+            if (currentRoomIndex >= theme.questions.length) return;
+
+            const inputRaw = document.getElementById('answer-input').value.trim();
+            const correctAnswerRaw = theme.questions[currentRoomIndex].answer;
+            const toleranceLimit = theme.questions[currentRoomIndex].errorTolerance !== undefined ? parseInt(theme.questions[currentRoomIndex].errorTolerance) : 2;
+
+            const feedbackEl = document.getElementById('feedback');
+            const inputEl = document.getElementById('answer-input');
+
+            const normalize = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            const inputNormalized = normalize(inputRaw);
+            const correctNormalized = normalize(correctAnswerRaw);
+
+            const distance = levenshteinDistance(inputNormalized, correctNormalized);
+
+            if (distance <= toleranceLimit) {
+                clearInterval(timerInterval);
+                
+                inputEl.disabled = true;
+                document.getElementById('btn-answer').disabled = true;
+                document.getElementById('btn-hint').disabled = true;
+                
+                if (distance === 0) {
+                    feedbackEl.textContent = "Cadeado aberto! O tempo parou. Clique em 'Avançar' para continuar.";
+                    feedbackEl.className = 'success';
+                } else {
+                    feedbackEl.innerHTML = `Cadeado aberto! (Aceito com pequenos erros). O tempo parou.<br>A resposta correta é: <span class="highlight-word">${correctAnswerRaw}</span><br>Clique em 'Avançar' para continuar.`;
+                    feedbackEl.className = 'warning';
+                }
+
+                const btnAdvanceEl = document.getElementById('btn-advance');
+                btnAdvanceEl.disabled = false;
+                btnAdvanceEl.focus(); 
+                
+            } else {
+                feedbackEl.textContent = "Senha incorreta.";
+                feedbackEl.className = 'error';
+                setTimeout(() => { if(currentTimeLeft > 0) feedbackEl.textContent = ''; }, 2000);
+            }
+        }
+
+        function advanceRoom() {
+            let currentRoomIndex = parseInt(localStorage.getItem(`progress_${activeThemeId}`)) || 0;
+            localStorage.setItem(`progress_${activeThemeId}`, currentRoomIndex + 1);
+            renderRoom(); 
+        }
+
+        function resetCurrentThemeProgress() {
+            if(confirm("Deseja apagar seu progresso neste tema e retornar à Sala 1?")) {
+                localStorage.setItem(`progress_${activeThemeId}`, 0);
+                localStorage.setItem(`hints_used_${activeThemeId}`, 0); 
+                renderRoom();
+            }
+        }
+
+        function loadEditorThemes() {
+            const select = document.getElementById('editor-theme-select');
+            select.innerHTML = '<option value="">-- Selecione um Tema para Editar --</option>';
+            gameData.forEach(theme => {
+                select.innerHTML += `<option value="${theme.id}">${theme.name}</option>`;
+            });
+            document.getElementById('editor-workspace').style.display = 'none';
+            document.getElementById('btn-delete-theme').style.display = 'none';
+            activeThemeEditorId = null;
+        }
+
+        function createNewTheme() {
+            const name = prompt("Digite o nome do novo tema:");
+            if (!name) return;
+            
+            const newTheme = {
+                id: 'tema_' + Date.now(),
+                name: name,
+                maxHints: 3,
+                questions: []
+            };
+            gameData.push(newTheme);
+            saveToLocal();
+            loadEditorThemes();
+            loadExportOptions(); // Atualiza o select de exportação
+            
+            document.getElementById('editor-theme-select').value = newTheme.id;
+            renderEditorArea();
+        }
+
+        function renderEditorArea() {
+            const select = document.getElementById('editor-theme-select');
+            activeThemeEditorId = select.value;
+            const workspace = document.getElementById('editor-workspace');
+            const deleteThemeBtn = document.getElementById('btn-delete-theme');
+            
+            if (!activeThemeEditorId) {
+                workspace.style.display = 'none';
+                deleteThemeBtn.style.display = 'none';
+                return;
+            }
+
+            workspace.style.display = 'block';
+            deleteThemeBtn.style.display = 'inline-block';
+            
+            const theme = gameData.find(t => t.id === activeThemeEditorId);
+            document.getElementById('edit-theme-name').value = theme.name;
+            document.getElementById('edit-theme-hints').value = theme.maxHints !== undefined ? theme.maxHints : 3;
+            
+            renderQuestionsList(theme.questions);
+        }
+
+        function deleteCurrentTheme() {
+            if (!activeThemeEditorId) return;
+
+            const theme = gameData.find(t => t.id === activeThemeEditorId);
+            const confirmation = confirm(`ATENÇÃO: Tem certeza de que deseja excluir o tema de perguntas "${theme.name}"? Todas as salas associadas e históricos serão excluídos permanentemente.`);
+            
+            if (confirmation) {
+                localStorage.removeItem(`progress_${activeThemeEditorId}`);
+                localStorage.removeItem(`hints_used_${activeThemeEditorId}`);
+                gameData = gameData.filter(t => t.id !== activeThemeEditorId);
+                
+                saveToLocal();
+                loadEditorThemes();
+                loadExportOptions(); // Atualiza o select de exportação
+                alert("Tema excluído com sucesso.");
+            }
+        }
+
+        function renderQuestionsList(questions) {
+            const list = document.getElementById('editor-questions-list');
+            list.innerHTML = '';
+            
+            questions.forEach((q, index) => {
+                const tol = q.errorTolerance !== undefined ? q.errorTolerance : 2;
+                const dicaText = q.hint || ''; 
+                
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.innerHTML = `
+                    <button class="card-delete-btn btn-danger" onclick="deleteQuestion(${index})">Excluir Sala</button>
+                    <h4>Sala ${index + 1}</h4>
+                    
+                    <div class="editor-grid-3">
+                        <div>
+                            <label>Nome da Sala:</label>
+                            <input type="text" id="q-name-${index}" value="${q.roomName}">
+                        </div>
+                        <div>
+                            <label>Tempo (Segundos):</label>
+                            <input type="number" id="q-tempo-${index}" value="${q.timeLimit || 60}" min="5">
+                        </div>
+                        <div>
+                            <label>Tolerância (Letras):</label>
+                            <input type="number" id="q-tolerancia-${index}" value="${tol}" min="0">
+                        </div>
+                    </div>
+
+                    <label>História / Cenário:</label>
+                    <textarea id="q-desc-${index}" rows="3">${q.description}</textarea>
+                    
+                    <label>Pergunta:</label>
+                    <input type="text" id="q-pergunta-${index}" value="${q.question}">
+                    
+                    <label>Dica da Sala (Opcional):</label>
+                    <input type="text" id="q-dica-${index}" value="${dicaText}" placeholder="Pequena dica caso os alunos travem...">
+
+                    <label>Resposta Correta:</label>
+                    <input type="text" id="q-resposta-${index}" value="${q.answer}">
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function addQuestionToCurrentTheme() {
+            const theme = gameData.find(t => t.id === activeThemeEditorId);
+            theme.questions.push({
+                roomName: "Nova Sala",
+                description: "",
+                question: "",
+                hint: "",
+                answer: "",
+                timeLimit: 60,
+                errorTolerance: 2
+            });
+            renderQuestionsList(theme.questions);
+        }
+
+        function deleteQuestion(index) {
+            if(confirm("Remover esta sala específica?")) {
+                const theme = gameData.find(t => t.id === activeThemeEditorId);
+                theme.questions.splice(index, 1);
+                renderQuestionsList(theme.questions);
+            }
+        }
+
+        function updateThemeConfig() {
+            const theme = gameData.find(t => t.id === activeThemeEditorId);
+            theme.name = document.getElementById('edit-theme-name').value;
+            theme.maxHints = parseInt(document.getElementById('edit-theme-hints').value) || 0;
+            const option = document.querySelector(`#editor-theme-select option[value="${activeThemeEditorId}"]`);
+            if(option) option.textContent = theme.name;
+            
+            // Atualiza também no exportador em tempo real caso o nome mude
+            const exportOption = document.querySelector(`#export-theme-select option[value="${activeThemeEditorId}"]`);
+            if(exportOption) exportOption.textContent = theme.name;
+        }
+
+        function saveEditorData() {
+            const theme = gameData.find(t => t.id === activeThemeEditorId);
+            if(theme) {
+                theme.name = document.getElementById('edit-theme-name').value;
+                theme.maxHints = parseInt(document.getElementById('edit-theme-hints').value) || 0;
+
+                theme.questions.forEach((q, index) => {
+                    q.roomName = document.getElementById(`q-name-${index}`).value;
+                    q.timeLimit = parseInt(document.getElementById(`q-tempo-${index}`).value) || 60;
+                    q.errorTolerance = parseInt(document.getElementById(`q-tolerancia-${index}`).value) || 0;
+                    q.description = document.getElementById(`q-desc-${index}`).value;
+                    q.question = document.getElementById(`q-pergunta-${index}`).value;
+                    q.hint = document.getElementById(`q-dica-${index}`).value;
+                    q.answer = document.getElementById(`q-resposta-${index}`).value;
+                });
+            }
+            saveToLocal();
+            alert("Modificações aplicadas com sucesso!");
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('escapeRoomDataV7', JSON.stringify(gameData));
+        }
+
+        document.getElementById("answer-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                if (!document.getElementById('btn-answer').disabled) {
+                    checkAnswer();
+                }
+            }
+        });
+
+        function exportData() {
+            const exportSelect = document.getElementById('export-theme-select');
+            const selectedValue = exportSelect.value;
+            let dataToExport = gameData;
+
+            if (selectedValue !== "all") {
+                const selectedTheme = gameData.find(t => t.id === selectedValue);
+                if (selectedTheme) {
+                    dataToExport = [selectedTheme];
+                }
+            }
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport, null, 4));
+            
+            let fileName = "escape_room_backup_completo.json";
+            if (selectedValue !== "all" && dataToExport[0]) {
+                const themeNameClean = dataToExport[0].name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "_");
+                fileName = `escape_room_${themeNameClean}.json`;
+            }
+
+            const node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", fileName);
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported) && imported.length > 0 && imported[0].hasOwnProperty('id')) {
+                        
+                        let adicionados = 0;
+                        let atualizados = 0;
+
+                        imported.forEach(temaImportado => {
+                            const indexExistente = gameData.findIndex(t => t.id === temaImportado.id);
+                            
+                            if (indexExistente !== -1) {
+                                gameData[indexExistente] = temaImportado;
+                                atualizados++;
+                            } else {
+                                gameData.push(temaImportado);
+                                adicionados++;
+                            }
+                        });
+
+                        saveToLocal();
+                        document.getElementById('import-file').value = ""; 
+                        
+                        loadExportOptions(); // Atualiza a lista de exportação
+                        
+                        alert(`Importação concluída com sucesso!\n\nNovos temas adicionados: ${adicionados}\nTemas atualizados: ${atualizados}`);
+                        
+                        if(document.getElementById('screen-editor').classList.contains('active')) {
+                            loadEditorThemes();
+                        }
+
+                    } else {
+                        alert("Arquivo inválido. Certifique-se de ser um backup gerado por este jogo.");
+                    }
+                } catch (error) {
+                    alert("Erro ao ler o arquivo JSON.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Inicialização da página
+        loadExportOptions();
+    </script>
+</body>
+</html>
