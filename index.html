@@ -22,7 +22,7 @@ Ao utilizar, acessar ou compartilhar este código e jogo, você concorda com os 
 
 Qualquer violação destes termos constitui infração de direitos autorais (Lei nº 9.610/98) e estará sujeita às medidas ilegalidades cabíveis.
 
-Para dúvidas ou permissões especiais, entre em contato através do e-mail: [edimar010@hotmail.com]
+Para dúvidas ou permissões especiais, entre em contato através do e-mail: edimar010@hotmail.com
 -->
 
 <!DOCTYPE html>
@@ -167,6 +167,96 @@ Para dúvidas ou permissões especiais, entre em contato através do e-mail: [ed
         @media (max-width: 600px) {
             .editor-grid-3 { grid-template-columns: 1fr; }
         }
+
+        /* --- ESTILOS DOS MODAIS DE TERMOS E GUIA --- */
+        .modal-container {
+            display: none; 
+            position: fixed; 
+            z-index: 9999; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.85); 
+            backdrop-filter: blur(3px);
+        }
+        .modal-conteudo-box {
+            background-color: var(--panel-bg);
+            color: var(--text-color);
+            margin: 5% auto; 
+            padding: 30px; 
+            border-radius: 12px;
+            width: 90%; 
+            max-width: 800px;
+            max-height: 85vh; 
+            overflow-y: auto;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.8);
+            text-align: left;
+            position: relative;
+            border: 1px solid #444;
+        }
+        .modal-conteudo-box h2, .modal-conteudo-box h3 {
+            color: var(--accent-color);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        .modal-conteudo-box h2 {
+            margin-top: 0;
+            font-size: 1.8em;
+            text-align: center;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+        }
+        .modal-conteudo-box p { margin-bottom: 12px; line-height: 1.5; font-size: 1.1em; }
+        .modal-conteudo-box ul, .modal-conteudo-box ol {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        .modal-conteudo-box li { margin-bottom: 10px; line-height: 1.4; font-size: 1.1em; }
+        .modal-conteudo-box a { color: #1976d2; text-decoration: none; font-weight: bold; }
+        .modal-conteudo-box a:hover { text-decoration: underline; color: var(--accent-color); }
+        
+        .fechar-modal-x {
+            color: #aaa;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.3s;
+        }
+        .fechar-modal-x:hover { color: var(--accent-color); }
+        
+        .prompt-box {
+            background-color: #111;
+            color: #a8ff60;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1em;
+            white-space: pre-wrap;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--accent-color);
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+
+        .botoes-topo-grid {
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-top: 15px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (max-width: 500px) {
+            .botoes-topo-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -177,7 +267,12 @@ Para dúvidas ou permissões especiais, entre em contato através do e-mail: [ed
         
         <br><br>
         <button onclick="nav('screen-intro')" style="font-size: 1.5em; padding: 15px 40px;">Jogar</button>
-        <br><br><br>
+        
+        <!-- NOVOS BOTOES DE TERMOS E GUIA -->
+        <div class="botoes-topo-grid" style="margin-bottom: 30px;">
+            <button style="background-color: #333;" id="btnAbrirTermos">⚖️ Ler Termos de Uso</button>
+            <button class="btn-action" id="btnAbrirGuia">📖 Guia Prático</button>
+        </div>
 
         <div class="editor-panel" style="max-width: 400px; margin: 0 auto;">
             <h3>Painel de Controle</h3>
@@ -188,7 +283,7 @@ Para dúvidas ou permissões especiais, entre em contato através do e-mail: [ed
                 <label for="export-theme-select" style="font-size: 0.9em; margin-bottom: 5px; display: block;">Filtrar exportação:</label>
                 <select id="export-theme-select" style="margin-bottom: 10px;">
                     <option value="all">Exportar Todos os Temas</option>
-                    </select>
+                </select>
                 <button onclick="exportData()" style="font-size: 0.9em; width: 100%;">Exportar (.json)</button>
             </div>
             
@@ -287,6 +382,113 @@ Para dúvidas ou permissões especiais, entre em contato através do e-mail: [ed
         </div>
     </div>
 
+    <!-- MODAL DE TERMOS DE USO -->
+    <div id="modalTermos" class="modal-container">
+        <div class="modal-conteudo-box">
+            <span class="fechar-modal-x">&times;</span>
+            
+            <h2>Jogos Pedagógicos em HTML - Aulas de História</h2>
+            <p>Bem-vindo ao repositório de jogos educativos! Este projeto reúne diversas atividades interativas (Escape Room, Quiz, Tabuleiro, Campo minado, Agentes do Tempo) desenvolvidas para tornar o ensino de História mais dinâmico e envolvente, voltado especialmente para alunos do 6º ao 9º ano.</p>
+
+            <h3>🎮 Sobre os Projetos</h3>
+            <p>Estes materiais foram criados com foco na imersão dos alunos nos conteúdos pedagógicos de maneira gameficada. Todo o código foi construído utilizando HTML, CSS e JavaScript.</p>
+
+            <h3>🚀 Como Utilizar em Sala de Aula</h3>
+            <p>Para utilizar estes jogos com seus alunos, você não precisa baixar nenhum código.<br>Basta acessar os links hospedados e compartilhar com a turma:</p>
+            <ul>
+                <li><a href="https://edcoscolin15-debug.github.io/campo_minado_historia/" target="_blank">[Campo Minado]</a></li>
+                <li><a href="https://edcoscolin15-debug.github.io/escape-rom-historia/" target="_blank">[Escape Rom]</a></li>
+                <li><a href="https://edcoscolin15-debug.github.io/agentes_do_tempo_historia/" target="_blank">[Agentes do Tempo]</a></li>
+                <li><a href="https://edcoscolin15-debug.github.io/tabuleiro_historia/" target="_blank">[Tabuleiro]</a></li>
+                <li><a href="https://edcoscolin15-debug.github.io/quiz_historia/" target="_blank">[Quiz]</a></li>
+            </ul>
+
+            <h3>⚖️ Termos de Uso e Licenciamento (Atenção)</h3>
+            <p>Todo este material foi desenvolvido com muito esforço e é disponibilizado de forma 100% gratuita para fins pedagógicos e educacionais.</p>
+            
+            <p><strong>O que é PERMITIDO:</strong></p>
+            <ul>
+                <li>✅ Utilizar os jogos em sala de aula (projetores, laboratórios, lousas digitais).</li>
+                <li>✅ Compartilhar o link original do repositório ou do jogo com outros professores e alunos.</li>
+            </ul>
+
+            <p><strong>O que é PROIBIDO:</strong></p>
+            <ul>
+                <li>❌ Vender, alugar, sublicenciar ou cobrar qualquer tipo de acesso a este material.</li>
+                <li>❌ Hospedar este código em sites de terceiros com intuito de gerar receita (paywalls, anúncios, etc.).</li>
+                <li>❌ Alterar a estrutura do código para criar obras derivadas destinadas à distribuição.</li>
+                <li>❌ Remover os créditos de autoria e marcações de propriedade intelectual presentes no código-fonte e na interface.</li>
+            </ul>
+
+            <p><strong>Licença Oficial:</strong><br>
+            Este trabalho está licenciado sob a Licença Creative Commons Atribuição-NãoComercial-SemDerivações 4.0 Internacional (CC BY-NC-ND 4.0).</p>
+            <p>Para ver uma cópia desta licença, visite: <a href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">creativecommons.org/licenses/by-nc-nd/4.0/</a></p>
+
+            <h3>👨‍🏫 Autoria e Contato</h3>
+            <p>Desenvolvido por Edimar Coscolin, Professor de História.<br>
+            Contato / E-mail: <a href="mailto:edimar010@hotmail.com">edimar010@hotmail.com</a></p>
+
+            <button class="btn-danger fechar-botao-rodape" style="margin-top: 25px; padding: 15px; width: 100%; font-size: 1.2em;">Fechar Termos</button>
+        </div>
+    </div>
+
+    <!-- MODAL DO GUIA PRÁTICO -->
+    <div id="modalGuia" class="modal-container">
+        <div class="modal-conteudo-box">
+            <span class="fechar-modal-x">&times;</span>
+            
+            <h2>📖 Guia prático de uso: Escape Room</h2>
+            <p>Este jogo foi desenvolvido para transformar o aprendizado em uma experiência imersiva e dinâmica. Através de uma interface baseada em "Escape Room", os alunos assumem o papel de protagonistas de eventos históricos, precisando decifrar enigmas e responder questões para avançar nas etapas do jogo.</p>
+
+            <h3>⚙️ Regras do Jogo</h3>
+            <ol>
+                <li><strong>O Objetivo:</strong> A equipe deve completar todas as "Salas" (perguntas) do tema escolhido para obter a liberdade/vitória.</li>
+                <li><strong>O Cronômetro (Tensão):</strong> Cada sala possui um tempo limite. Se o tempo zerar, o sistema aplica uma penalidade severa: o progresso é resetado e a equipe retorna automaticamente para a "Sala 1". Isso incentiva a agilidade e o trabalho em equipe.</li>
+                <li><strong>Validação Inteligente:</strong> O sistema não é rígido. Ele utiliza a Distância de Levenshtein para perdoar pequenos erros de digitação.
+                    <ul>
+                        <li>Se o aluno errar uma letra, o sistema aceita a resposta, mas exibe um aviso educativo mostrando a grafia correta para correção imediata.</li>
+                    </ul>
+                </li>
+                <li><strong>Trabalho Colaborativo:</strong> O jogo é ideal para ser jogado em grupos, onde um aluno lê a narrativa enquanto outro manipula o dispositivo.</li>
+            </ol>
+
+            <h3>🛠 Como Utilizar</h3>
+            <ul>
+                <li><strong>Painel de Controle:</strong> Na tela inicial, o botão "Editor e Criador do Jogo" dá acesso total ao motor do jogo.</li>
+                <li><strong>Importação/Exportação:</strong> Você pode criar seus temas, exportá-los em formato JSON para o seu computador (como backup) ou importar arquivos de outros professores para expandir sua biblioteca de desafios.</li>
+                <li><strong>Flexibilidade:</strong> Ao criar uma pergunta, você define:
+                    <ul>
+                        <li>O cenário (história imersiva).</li>
+                        <li>A pergunta e a resposta correta.</li>
+                        <li>O tempo limite (ajuste conforme a complexidade).</li>
+                        <li>A Tolerância de Erros (quantas letras erradas o aluno pode digitar e ainda assim avançar).</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>🤖 Prompt para Criar Novos Desafios com a IA</h3>
+            <p>Para gerar novos roteiros prontos para importação, utilize o seguinte prompt na sua ferramenta de IA. Copie e cole este modelo:</p>
+            
+            <div class="prompt-box">"Atue como um especialista em design de jogos pedagógicos para o Ensino Fundamental II. Crie um arquivo JSON estruturado para um 'Escape Room' temático sobre [INSIRA O TEMA AQUI, EX: A Revolução Industrial].
+
+Requisitos:
+1. Crie 10 a 15 salas (perguntas) em sequência lógica.
+2. Antes de cada pergunta, escreva um parágrafo narrativo (história imersiva) que situe o aluno no contexto histórico. A narrativa deve ser contínua ao longo das salas.
+3. Cada pergunta deve ter um claro valor pedagógico e nível de dificuldade entre DEFINA AQUI O NÍVEL E O PÚBLICO ALVO.
+4. Adicione um campo 'timeLimit' (entre 45 e 120 segundos) e um campo 'errorTolerance' (0 a 3 letras).
+5. Formate a saída como um JSON válido, pronto para importação direta, contendo os campos: 'roomName', 'description', 'question', 'answer', 'timeLimit', 'errorTolerance'."</div>
+
+            <h3>💡 Dicas Pedagógicas para o Professor</h3>
+            <ul>
+                <li><strong>Mediação:</strong> Como o jogo salva o progresso via LocalStorage no próprio navegador, você pode permitir que os alunos comecem uma missão e a terminem em uma aula subsequente, caso o tempo da aula atual acabe.</li>
+                <li><strong>Personalização:</strong> Use o campo "História/Cenário" para inserir curiosidades históricas que não estão nos livros didáticos, tornando a narrativa mais instigante.</li>
+     
+            </ul>
+
+            <button class="btn-danger fechar-botao-rodape" style="margin-top: 25px; padding: 15px; width: 100%; font-size: 1.2em;">Fechar Guia Prático</button>
+        </div>
+    </div>
+
     <script>
         // --- Algoritmo de Distância de Levenshtein ---
         function levenshteinDistance(a, b) {
@@ -350,6 +552,36 @@ Para dúvidas ou permissões especiais, entre em contato através do e-mail: [ed
         
         let timerInterval;
         let currentTimeLeft;
+
+        // --- Lógica dos Modais de Termos e Guia ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const modalTermos = document.getElementById("modalTermos");
+            const modalGuia = document.getElementById("modalGuia");
+            
+            if (document.getElementById("btnAbrirTermos")) {
+                document.getElementById("btnAbrirTermos").onclick = function() { modalTermos.style.display = "block"; }
+            }
+            if (document.getElementById("btnAbrirGuia")) {
+                document.getElementById("btnAbrirGuia").onclick = function() { modalGuia.style.display = "block"; }
+            }
+            
+            function fecharModais() {
+                modalTermos.style.display = "none";
+                modalGuia.style.display = "none";
+            }
+
+            const botoesFecharX = document.querySelectorAll(".fechar-modal-x");
+            botoesFecharX.forEach(btn => { btn.onclick = fecharModais; });
+
+            const botoesFecharRodape = document.querySelectorAll(".fechar-botao-rodape");
+            botoesFecharRodape.forEach(btn => { btn.onclick = fecharModais; });
+            
+            window.addEventListener('click', function(event) {
+                if (event.target == modalTermos || event.target == modalGuia) {
+                    fecharModais();
+                }
+            });
+        });
 
         function nav(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
